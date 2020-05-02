@@ -42,14 +42,12 @@ clrmem:
 
     JSR vblankwait  ; jump to vblank wait again, returns here
 
-; Enable IRQs
-; We do this later because otherwise FCEUX doesn't work, for some reason
+; Enable IRQs now, once we've disabled most of them
     CLI
 
-; SWITCH CHR BANK
-    LDA #%00000010
-    STA $8000
+; SWITCH 1st CHR BANK INTO $0000-$07FF
     LDA #0
+    STA $8000
     STA $8001
 
 ; LOAD PALATTES
@@ -103,7 +101,7 @@ LoadAttributeLoop:
                           ; if compare was equal to 128, keep going down
 
     LDA #%10000000   ; enable NMI, sprites from Pattern Table 0
-    STA $2000
+    STA PPUCTRL_ADDR
 
     LDA #%00010000   ; no intensify (black background), enable sprites
     STA $2001
@@ -124,7 +122,7 @@ Forever:
     LDA #%00000001
 
 StorePage:
-    ORA #%10010000 ; enable NMI, sprites from Pattern Table 0, background from Pattern Table 1
+    ORA #%10001000 ; enable NMI, sprites from Pattern Table 1, background from Pattern Table 0
     STA PPUCTRL_ADDR
     .endm
 
@@ -169,7 +167,7 @@ NMI:
     SCROLL SCROLL_BACKGROUND,#SCROLL_BIT_BACKGROUND,#4
 
     STORE_SCROLL SCROLL_BACKGROUND
-    LDX #$F8 ; y-scroll
+    LDX #0 ; y-scroll
     STX $2005
 
     STORE_PAGE #SCROLL_BIT_BACKGROUND
@@ -188,8 +186,6 @@ NMI:
 ; IRQ CODE
 ; --------
 IRQ:
-    SEI ; Disable maskable interrupts
-
 ; Save A, X, and Y
     pha
     txa
