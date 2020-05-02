@@ -202,7 +202,7 @@ SCROLL_BIT_TRAIN2 = %00001000
 ; CHR-ROM bank(s)
 ; ---------------
 
-    .incbin "CHR/chr000.chr" ; empty
+    .incbin "CHR/chr000.chr" ; background elements
     .incbin "CHR/chr001.chr" ; empty
     .incbin "CHR/chr002.chr" ; ...
     .incbin "CHR/chr003.chr"

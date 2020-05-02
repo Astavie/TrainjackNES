@@ -42,6 +42,12 @@ clrmem:
 
     JSR vblankwait  ; jump to vblank wait again, returns here
 
+; SWITCH CHR BANK
+    LDA #%00000010
+    STA $8000
+    LDA #0
+    STA $8001
+
 ; LOAD PALATTES
 
     ; Prepare write to $3F00
