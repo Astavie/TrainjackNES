@@ -12,7 +12,7 @@ vblankwait:
 ; INITIALIZATION CODE
 ; -------------------
 RESET:
-    CLI ; Enable IRQs
+    SEI ; Disable IRQs
     CLD ; Disable decimal mode
 
     JSR vblankwait ; jump to vblank wait #1
@@ -41,6 +41,10 @@ clrmem:
     BNE clrmem
 
     JSR vblankwait  ; jump to vblank wait again, returns here
+
+; Enable IRQs
+; We do this later because otherwise FCEUX doesn't work, for some reason
+    CLI
 
 ; SWITCH CHR BANK
     LDA #%00000010
@@ -142,9 +146,8 @@ ScrollEnd:
 
 ; Sets PPUSCROLL to a scroll variable in memory
 .macro STORE_SCROLL _scroll_addr
+    LDA $2002             ; read PPU status to reset the high/low latch
     LDX _scroll_addr
-    STX $2005
-    LDX #$F8
     STX $2005
     .endm
 
@@ -164,7 +167,11 @@ NMI:
 
 ; Scrolling
     SCROLL SCROLL_BACKGROUND,#SCROLL_BIT_BACKGROUND,#4
+
     STORE_SCROLL SCROLL_BACKGROUND
+    LDX #$F8 ; y-scroll
+    STX $2005
+
     STORE_PAGE #SCROLL_BIT_BACKGROUND
 
 ; Setup IRQ
@@ -220,11 +227,17 @@ attribute:
     .db %00000000, %00010000, %01010000, %00010000, %00000000, %00000000, %00000000, %00110000
     .db $24,$24,$24,$24, $47,$47,$24,$24 ,$47,$47,$47,$47, $47,$47,$24,$24 ,$24,$24,$24,$24 ,$24,$24,$24,$24, $24,$24,$24,$24, $55,$56,$24,$24  ;;brick bottoms
 
+; ---
+; ???
+; ---
+
+    .pad $FFFA, $FF
+
 ; -----------------
 ; INTERRUPT VECTORS
 ; -----------------
 
-    .org $fffa
+    .base $fffa
 
     .dw NMI
     .dw RESET
